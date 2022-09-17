@@ -1,4 +1,4 @@
-name: workflow
+name: terraform
 
 # Controls when the workflow will run
 on:
@@ -14,29 +14,46 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
-  job1:
-    runs-on: self-hosted
+    job1:
+      runs-on: ubantu-latest
+      steps:
+       - uses: actions/checkout@v3
+       - uses: hashicorp/setup-terraform@v2
 
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.10' 
-      - name: hii i am python
-        run: python my.py
-        
+       - name: Configure AWS Credentials
+         uses: aws-actions/configure-aws-credentials@v1
+         with:
+
+           aws-access-key-id    : ${{ secrets.MY_ACCESS_KEY }}
+
+           aws-secret-access-key: ${{ secrets.MY_SESSION_TOKEN }}
+
+           aws-session-token    : ${{ secrets.SECRET_ACCESS_KEY}}
+
+           aws-region: ap-south-1
+
+       - name: Terraform fmt
+         id: fmt
+         run: terraform fmt -check
+         continue-on-error: true
+
+       - name: Terraform Init
+         id: init
+         run: terraform init
+
+       - name: Terraform Validate
+         id: validate
+         run: terraform validate 
+
+       - name: Terraform Plan
+         id: plan
+         run: terraform plan 
+         continue-on-error: 
+         
+       - name: Terraform Apply
+         run: terraform apply -auto-approve
 
 
-  job3:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.10' 
-      - name: hii i am python
-        run: python myfolder/**
-      
+ 
 
       
